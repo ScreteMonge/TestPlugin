@@ -38,6 +38,7 @@ public class RestingPlugin extends Plugin
 
 	private final Map<Player, WorldPoint> restMap = new HashMap<>();
 	private final Map<Player, Integer> weaponMap = new HashMap<>();
+	private final Map<Player, Integer> idlePoseMap = new HashMap<>();
 	private final int MAGIC_LUNAR_DREAM_Z = 1056;
 	private final int MAGIC_LUNAR_DREAM_SITTING_DOWN = 7627;
 	private final int MAGIC_LUNAR_DREAM_RESTING_POSE = 6296;
@@ -237,7 +238,6 @@ public class RestingPlugin extends Plugin
 	public void stopRest(Player player, int newAnimationID)
 	{
 		player.setAnimation(newAnimationID);
-		player.setIdlePoseAnimation(AnimationID.IDLE);
 		player.setGraphic(-1);
 		returnWeapon(player);
 		restMap.remove(player);
@@ -247,10 +247,13 @@ public class RestingPlugin extends Plugin
 	{
 		PlayerComposition comp = player.getPlayerComposition();
 		int[] kits = comp.getEquipmentIds();
-		int weaponID = comp.getEquipmentId(KitType.WEAPON);
-		weaponMap.put(player, weaponID);
+		int weaponId = comp.getEquipmentId(KitType.WEAPON);
+		weaponMap.put(player, weaponId);
 
-		if (weaponID != 0)
+		int idlePoseId = player.getIdlePoseAnimation();
+		idlePoseMap.put(player, idlePoseId);
+
+		if (weaponId != 0)
 		{
 			kits[KitType.WEAPON.getIndex()] = 0;
 			player.getPlayerComposition().setHash();
@@ -264,6 +267,10 @@ public class RestingPlugin extends Plugin
 		kits[KitType.WEAPON.getIndex()] = weaponMap.get(player) + 512;
 		player.getPlayerComposition().setHash();
 		weaponMap.remove(player);
+
+		int idlePoseId = idlePoseMap.get(player);
+		player.setIdlePoseAnimation(idlePoseId);
+		idlePoseMap.remove(player);
 	}
 
 	public boolean angledToFire(Tile targetTile, WorldPoint worldPoint, int orientation)
