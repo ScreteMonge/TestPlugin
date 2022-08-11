@@ -7,16 +7,20 @@ import net.runelite.client.config.ConfigItem;
 @ConfigGroup("resting")
 public interface RestingConfig extends Config
 {
+	enum RestMode
+	{
+		REST,
+		SIT,
+		LOUNGE,
+		SLEEP
+	}
 	@ConfigItem(
-			keyName = "sleepWhileResting",
-			name = "Sleep while resting",
-			description = "Applies a snore animation while Resting",
+			keyName = "restMode",
+			name = "Rest mode",
+			description = "Configures which Rest animation to play for yourself",
 			position = 1
 	)
-	default boolean sleepWhileResting()
-	{
-		return false;
-	}
+	default RestMode restMode() { return RestMode.REST; }
 
 	@ConfigItem(
 			keyName = "allowOthersRest",

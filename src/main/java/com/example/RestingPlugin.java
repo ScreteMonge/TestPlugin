@@ -15,9 +15,7 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @PluginDescriptor(
@@ -40,9 +38,27 @@ public class RestingPlugin extends Plugin
 	private final Map<Player, Integer> weaponMap = new HashMap<>();
 	private final Map<Player, Integer> idlePoseMap = new HashMap<>();
 	private final int MAGIC_LUNAR_DREAM_Z = 1056;
+	private final int REST_POSE = 6296;
+	private final int SIT_POSE = 4851;
+	private final int LOUNGE_POSE = 6284;
 	private final int MAGIC_LUNAR_DREAM_SITTING_DOWN = 7627;
-	private final int MAGIC_LUNAR_DREAM_RESTING_POSE = 6296;
 	private final int EMOTE_SPIN = 2107;
+
+	@Override
+	protected void shutDown() throws Exception
+	{
+		for (Map.Entry<Player, WorldPoint> entry : restMap.entrySet())
+		{
+			Player player = entry.getKey();
+			player.setAnimation(-1);
+			if (player.getGraphic() == MAGIC_LUNAR_DREAM_Z)
+			{
+				player.setGraphic(-1);
+			}
+			returnWeapon(player);
+		}
+		restMap.clear();
+	}
 
 	// Create rest option for fires
 	@Subscribe
@@ -69,7 +85,7 @@ public class RestingPlugin extends Plugin
 		}
 	}
 
-	// Create three ways to rest: right-click on fires, right click run orb, and !rest for public resting
+	// Create three ways to rest: right-click on fires, right click run orb, and "spin" emote for public resting
 	// Prevent resting during combat
 	@Subscribe
 	public void onHitsplatApplied(HitsplatApplied event)
@@ -104,7 +120,7 @@ public class RestingPlugin extends Plugin
 		}
 	}
 
-	// Loop sleep Z animations if option is toggled
+	// Loop sleep Z animations if config set to Sleep
 	@Subscribe
 	public void onGraphicChanged(GraphicChanged event)
 	{
@@ -118,7 +134,7 @@ public class RestingPlugin extends Plugin
 			return;
 		}
 
-		if (restMap.containsKey(player) && config.sleepWhileResting())
+		if (restMap.containsKey(player) && config.restMode().equals(RestingConfig.RestMode.SLEEP))
 		{
 			player.setGraphic(MAGIC_LUNAR_DREAM_Z);
 			player.setSpotAnimFrame(0);
@@ -181,6 +197,7 @@ public class RestingPlugin extends Plugin
 
 			if (!restMap.containsKey(player) && newAnimation == EMOTE_SPIN)
 			{
+				player.setAnimation(AnimationID.IDLE);
 				startRest(player);
 				return;
 			}
@@ -192,6 +209,8 @@ public class RestingPlugin extends Plugin
 		}
 	}
 
+	// If others can no longer rest, reset their animations
+	// If rest mode/animation is changed for local player, change animations
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
@@ -206,10 +225,38 @@ public class RestingPlugin extends Plugin
 				}
 			}
 		}
+
+		Player player = client.getLocalPlayer();
+		if (restMap.containsKey(player) && event.getKey().equals("restMode"))
+		{
+			player.setAnimation(AnimationID.IDLE);
+			switch (config.restMode())
+			{
+				case REST:
+					player.setIdlePoseAnimation(REST_POSE);
+					break;
+				case SIT:
+					player.setIdlePoseAnimation(SIT_POSE);
+					break;
+				case LOUNGE:
+					player.setIdlePoseAnimation(LOUNGE_POSE);
+					break;
+				case SLEEP:
+					player.setIdlePoseAnimation(REST_POSE);
+					player.setGraphic(MAGIC_LUNAR_DREAM_Z);
+					player.setSpotAnimFrame(0);
+					player.setGraphicHeight(0);
+			}
+		}
 	}
 
 	public void startRest(Player player)
 	{
+		if (player == null)
+		{
+			return;
+		}
+
 		if (restMap.containsKey(player))
 		{
 			if (player == client.getLocalPlayer())
@@ -221,24 +268,68 @@ public class RestingPlugin extends Plugin
 		}
 
 		removeWeapon(player);
-		player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
-		player.setAnimationFrame(0);
-		player.setIdlePoseAnimation(MAGIC_LUNAR_DREAM_RESTING_POSE);
+
+		if (player == client.getLocalPlayer())
+		{
+			switch (config.restMode())
+			{
+				case REST:
+					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
+					player.setAnimationFrame(0);
+					player.setIdlePoseAnimation(REST_POSE);
+					break;
+				case SIT:
+					player.setIdlePoseAnimation(SIT_POSE);
+					break;
+				case LOUNGE:
+					player.setIdlePoseAnimation(LOUNGE_POSE);
+					break;
+				case SLEEP:
+					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
+					player.setAnimationFrame(0);
+					player.setIdlePoseAnimation(REST_POSE);
+					player.setGraphic(MAGIC_LUNAR_DREAM_Z);
+					player.setSpotAnimFrame(0);
+					player.setGraphicHeight(0);
+			}
+		}
+		else
+		{
+			int randomNumber = (int) (Math.random() * 4 + 1);
+			switch (randomNumber)
+			{
+				case 1:
+					player.setIdlePoseAnimation(SIT_POSE);
+					break;
+				case 2:
+					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
+					player.setAnimationFrame(0);
+					player.setIdlePoseAnimation(REST_POSE);
+					break;
+				case 3:
+					player.setIdlePoseAnimation(LOUNGE_POSE);
+					break;
+				case 4:
+					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
+					player.setAnimationFrame(0);
+					player.setIdlePoseAnimation(REST_POSE);
+					player.setGraphic(MAGIC_LUNAR_DREAM_Z);
+					player.setSpotAnimFrame(0);
+					player.setGraphicHeight(0);
+			}
+		}
+
 		final WorldPoint restLocation = player.getWorldLocation();
 		restMap.put(player, restLocation);
-
-		if (config.sleepWhileResting())
-		{
-			player.setGraphic(MAGIC_LUNAR_DREAM_Z);
-			player.setSpotAnimFrame(0);
-			player.setGraphicHeight(0);
-		}
 	}
 
 	public void stopRest(Player player, int newAnimationID)
 	{
 		player.setAnimation(newAnimationID);
-		player.setGraphic(-1);
+		if (player.getGraphic() == MAGIC_LUNAR_DREAM_Z)
+		{
+			player.setGraphic(-1);
+		}
 		returnWeapon(player);
 		restMap.remove(player);
 	}
