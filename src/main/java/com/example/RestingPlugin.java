@@ -8,6 +8,7 @@ import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.kit.KitType;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -33,6 +34,9 @@ public class RestingPlugin extends Plugin
 
 	@Inject
 	private ChatMessageManager chatMessageManager;
+
+	@Inject
+	private ClientThread clientThread;
 
 	private final Map<Player, WorldPoint> restMap = new HashMap<>();
 	private final Map<Player, Integer> weaponMap = new HashMap<>();
@@ -101,7 +105,7 @@ public class RestingPlugin extends Plugin
 		}
 	}
 
-	// Create rest option behind right-click run orb
+	// Create rest option behind right-click run orb. Create rest option behind the Spin emote (and prevent it effecting Spinning Wheels)
 	@Subscribe
 	public void onMenuOpened(MenuOpened event)
 	{
@@ -114,7 +118,7 @@ public class RestingPlugin extends Plugin
 					startRest(player));
 		}
 
-		if (event.getFirstEntry().getOption().equals("Spin"))
+		if (event.getFirstEntry().getOption().equals("Spin") && event.getMenuEntries().length == 2)
 		{
 			event.getFirstEntry().setOption("Rest (public)");
 		}

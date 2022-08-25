@@ -13,6 +13,7 @@ public interface RestingConfig extends Config
 		SIT,
 		LOUNGE,
 		SLEEP
+
 	}
 	@ConfigItem(
 			keyName = "restMode",
