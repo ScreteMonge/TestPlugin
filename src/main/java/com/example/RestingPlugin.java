@@ -20,9 +20,9 @@ import java.util.*;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Resting",
-	description = "Allows the player a resting idle animation",
-	tags = {"immersion", "rest", "emote"}
+		name = "Resting",
+		description = "Allows the player a resting idle animation",
+		tags = {"immersion", "rest", "emote"}
 )
 public class RestingPlugin extends Plugin
 {
@@ -47,6 +47,8 @@ public class RestingPlugin extends Plugin
 	private final int LOUNGE_POSE = 6284;
 	private final int MAGIC_LUNAR_DREAM_SITTING_DOWN = 7627;
 	private final int EMOTE_SPIN = 2107;
+	private double idleTickTimer = 0;
+	private WorldPoint autoRestLocation;
 
 	@Override
 	protected void shutDown() throws Exception
@@ -78,7 +80,7 @@ public class RestingPlugin extends Plugin
 			{
 				if (angledToFire(targetTile, worldPoint, player.getOrientation()))
 				{
-					startRest(player);
+					startRest(player, true);
 					sendChatMessage("You settle comfortably beside the fire.");
 				}
 				else
@@ -115,7 +117,7 @@ public class RestingPlugin extends Plugin
 		if (event.getFirstEntry().getOption().equals("Toggle Run"))
 		{
 			client.createMenuEntry(1).setOption("Rest (private)").setTarget(entry.getTarget()).setType(MenuAction.RUNELITE).onClick(e ->
-					startRest(player));
+					startRest(player, true));
 		}
 
 		if (event.getFirstEntry().getOption().equals("Spin") && event.getMenuEntries().length == 2)
@@ -154,23 +156,59 @@ public class RestingPlugin extends Plugin
 			return;
 		}
 
+		Player localPlayer = client.getLocalPlayer();
+
+		if (config.autoRest())
+		{
+			if (restMap.containsKey(localPlayer))
+			{
+				idleTickTimer = 0;
+			}
+			else
+			{
+				idleTickTimer++;
+				if (autoRestLocation != null)
+				{
+					if (hasMoved(localPlayer, autoRestLocation))
+					{
+						autoRestLocation = localPlayer.getWorldLocation();
+						idleTickTimer = 0;
+					}
+					else if (idleTickTimer % config.autoRestTimer() / 0.6 == 0)
+					{
+						startRest(localPlayer, false);
+						idleTickTimer = 0;
+					}
+				}
+				else
+				{
+					autoRestLocation = localPlayer.getWorldLocation();
+				}
+			}
+		}
+
 		if (config.allowOthersRest())
 		{
 			List<Player> players = client.getPlayers();
 			for (Player player : players)
 			{
-				if (restMap.containsKey(player) && hasMoved(player))
+				if (restMap.containsKey(player) && player != localPlayer)
 				{
-					stopRest(player, AnimationID.IDLE);
+					WorldPoint savedLocation = restMap.get(player);
+					if (hasMoved(player, savedLocation))
+					{
+						stopRest(player, AnimationID.IDLE);
+					}
 				}
 			}
 		}
-		else
+
+		if (restMap.containsKey(localPlayer))
 		{
-			Player player = client.getLocalPlayer();
-			if (restMap.containsKey(player) && hasMoved(player))
+			WorldPoint savedLocation = restMap.get(localPlayer);
+			if (hasMoved(localPlayer, savedLocation))
 			{
-				stopRest(player, AnimationID.IDLE);
+				stopRest(localPlayer, AnimationID.IDLE);
 			}
 		}
 	}
@@ -184,6 +222,12 @@ public class RestingPlugin extends Plugin
 		if (event.getActor() instanceof Player)
 		{
 			final Player player = (Player) event.getActor();
+
+			if (config.autoRest() && player == client.getLocalPlayer())
+			{
+				idleTickTimer = 0;
+			}
+
 			if (!config.allowOthersRest() && player != client.getLocalPlayer())
 			{
 				return;
@@ -202,7 +246,7 @@ public class RestingPlugin extends Plugin
 			if (!restMap.containsKey(player) && newAnimation == EMOTE_SPIN)
 			{
 				player.setAnimation(AnimationID.IDLE);
-				startRest(player);
+				startRest(player, true);
 				return;
 			}
 
@@ -254,7 +298,7 @@ public class RestingPlugin extends Plugin
 		}
 	}
 
-	public void startRest(Player player)
+	public void startRest(Player player, boolean alreadyRestingMessage)
 	{
 		if (player == null)
 		{
@@ -263,7 +307,7 @@ public class RestingPlugin extends Plugin
 
 		if (restMap.containsKey(player))
 		{
-			if (player == client.getLocalPlayer())
+			if (player == client.getLocalPlayer() && alreadyRestingMessage)
 			{
 				sendChatMessage("You're already resting!");
 				return;
@@ -380,10 +424,9 @@ public class RestingPlugin extends Plugin
 				|| (((orientation >= 1536 && orientation <= 2047) || (orientation == 0)) && targetTile.getWorldLocation().dx(-1).dy(1).distanceTo(worldPoint) == 0);
 	}
 
-	private boolean hasMoved(Player player)
+	private boolean hasMoved(Player player, WorldPoint savedLocation)
 	{
-		WorldPoint currentLocation = player.getWorldLocation();
-		return !restMap.get(player).equals(currentLocation);
+		return (restMap.containsKey(player) && !player.getWorldLocation().equals(restMap.get(player))) || (!restMap.containsKey(player) && !player.getWorldLocation().equals(savedLocation));
 	}
 
 	private void sendChatMessage(String chatMessage)
@@ -398,6 +441,3 @@ public class RestingPlugin extends Plugin
 		return configManager.getConfig(RestingConfig.class);
 	}
 }
-
-
-

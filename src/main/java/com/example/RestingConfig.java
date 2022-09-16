@@ -33,4 +33,20 @@ public interface RestingConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+			keyName = "autoRest",
+			name = "Auto-Resting",
+			description = "Makes you automatically Rest after a certain period of idle time",
+			position = 3
+	)
+	default boolean autoRest() { return false; }
+
+	@ConfigItem(
+			keyName = "autoRestTimer",
+			name = "Auto-Rest Timer (seconds)",
+			description = "Idle time (in seconds) before Auto-Resting if enabled",
+			position = 4
+	)
+	default int autoRestTimer()	{ return 30; }
 }
