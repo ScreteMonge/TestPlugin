@@ -21,8 +21,12 @@ You can also publicly activate Rest by using the Spin emote. This overrides the 
 
 ## Features
 
-![RestingConfig](https://imgur.com/tv5MDk9.png)
+![RestingConfig](https://imgur.com/4tRj5nx.png)
 
 You can set your idle animation of choice in the side panel
 
 ![RestAnimations](https://imgur.com/UscdDPt.png)
+
+You can also enable Auto-Resting, which makes you Rest after a set period of idle time (in seconds)
+
+![AutoRest](https://imgur.com/63n3KtQ.png)

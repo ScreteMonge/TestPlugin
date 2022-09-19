@@ -44,7 +44,7 @@ public interface RestingConfig extends Config
 
 	@ConfigItem(
 			keyName = "autoRestTimer",
-			name = "Auto-Rest Timer (seconds)",
+			name = "Auto-Rest Timer (sec)",
 			description = "Idle time (in seconds) before Auto-Resting if enabled",
 			position = 4
 	)

@@ -160,7 +160,7 @@ public class RestingPlugin extends Plugin
 
 		if (config.autoRest())
 		{
-			if (restMap.containsKey(localPlayer))
+			if (restMap.containsKey(localPlayer) || localPlayer.getAnimation() != AnimationID.IDLE)
 			{
 				idleTickTimer = 0;
 			}
