@@ -174,7 +174,7 @@ public class RestingPlugin extends Plugin
 						autoRestLocation = localPlayer.getWorldLocation();
 						idleTickTimer = 0;
 					}
-					else if (idleTickTimer % config.autoRestTimer() / 0.6 == 0)
+					else if ((idleTickTimer * 0.6) % config.autoRestTimer() == 0)
 					{
 						startRest(localPlayer, false);
 						idleTickTimer = 0;

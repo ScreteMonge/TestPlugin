@@ -17,7 +17,7 @@ public interface RestingConfig extends Config
 	}
 	@ConfigItem(
 			keyName = "restMode",
-			name = "Rest mode",
+			name = "Rest Mode",
 			description = "Configures which Rest animation to play for yourself",
 			position = 1
 	)
@@ -25,7 +25,7 @@ public interface RestingConfig extends Config
 
 	@ConfigItem(
 			keyName = "allowOthersRest",
-			name = "Allow others to rest",
+			name = "Allow Others Rest",
 			description = "Determines whether you can see other players Rest if they have the plugin and use the Spin emote",
 			position = 2
 	)
@@ -44,7 +44,7 @@ public interface RestingConfig extends Config
 
 	@ConfigItem(
 			keyName = "autoRestTimer",
-			name = "Auto-Rest Timer (sec)",
+			name = "Auto-Rest Timer (Sec)",
 			description = "Idle time (in seconds) before Auto-Resting if enabled",
 			position = 4
 	)
