@@ -49,7 +49,7 @@ public class RestingPlugin extends Plugin
 	private final int RELAX_POSE = 8409;
 	private final int LOUNGE_POSE = 6284;
 	private final int CROSS_ARMS_POSE = 2256;
-	private final int HOLD_HANDS = 2578;
+	private final int FOLD_HANDS = 2578;
 	private final int MAGIC_LUNAR_DREAM_SITTING_DOWN = 7627;
 	private final int EMOTE_SPIN = 2107;
 	private int autoRestTimer = 0;
@@ -290,8 +290,8 @@ public class RestingPlugin extends Plugin
 				case CROSS_ARMS:
 					player.setIdlePoseAnimation(CROSS_ARMS_POSE);
 					break;
-				case HOLD_HANDS:
-					player.setIdlePoseAnimation(HOLD_HANDS);
+				case FOLD_HANDS:
+					player.setIdlePoseAnimation(FOLD_HANDS);
 					break;
 				case CUSTOM:
 					player.setIdlePoseAnimation(config.customAnimation());

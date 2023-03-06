@@ -15,7 +15,7 @@ public interface RestingConfig extends Config
 		SLEEP,
 		RELAX,
 		CROSS_ARMS,
-		HOLD_HANDS,
+		FOLD_HANDS,
 		CUSTOM
 
 	}
