@@ -49,7 +49,7 @@ public class RestingPlugin extends Plugin
 	private final int RELAX_POSE = 8409;
 	private final int LOUNGE_POSE = 6284;
 	private final int CROSS_ARMS_POSE = 2256;
-	private final int FOLD_HANDS = 2578;
+	private final int FOLD_HANDS_POSE = 2578;
 	private final int MAGIC_LUNAR_DREAM_SITTING_DOWN = 7627;
 	private final int EMOTE_SPIN = 2107;
 	private int autoRestTimer = 0;
@@ -88,7 +88,8 @@ public class RestingPlugin extends Plugin
 					|| client.getWidget(WidgetInfo.DIALOG_NPC_HEAD_MODEL) != null
 					|| client.getWidget(WidgetInfo.DIALOG_PLAYER) != null
 					|| client.getWidget(WidgetInfo.DIALOG_OPTION) != null
-					|| client.getWidget(WidgetInfo.BANK_PIN_CONTAINER) != null)
+					|| client.getWidget(WidgetInfo.BANK_PIN_CONTAINER) != null
+					|| player.getAnimation() != -1)
 			{
 				autoRestTimer = 0;
 			}
@@ -214,7 +215,6 @@ public class RestingPlugin extends Plugin
 				|| eventId == WidgetInfo.BANK_PIN_CONTAINER.getGroupId())
 		{
 			autoRestTimer = 0;
-			System.out.println("Widget loaded");
 			stopRest(client.getLocalPlayer());
 		}
 	}
@@ -291,7 +291,7 @@ public class RestingPlugin extends Plugin
 					player.setIdlePoseAnimation(CROSS_ARMS_POSE);
 					break;
 				case FOLD_HANDS:
-					player.setIdlePoseAnimation(FOLD_HANDS);
+					player.setIdlePoseAnimation(FOLD_HANDS_POSE);
 					break;
 				case CUSTOM:
 					player.setIdlePoseAnimation(config.customAnimation());
