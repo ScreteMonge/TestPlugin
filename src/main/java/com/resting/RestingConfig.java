@@ -1,4 +1,4 @@
-package com.example;
+package com.resting;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
@@ -12,7 +12,11 @@ public interface RestingConfig extends Config
 		REST,
 		SIT,
 		LOUNGE,
-		SLEEP
+		SLEEP,
+		RELAX,
+		CROSS_ARMS,
+		HOLD_HANDS,
+		CUSTOM
 
 	}
 	@ConfigItem(
@@ -24,12 +28,12 @@ public interface RestingConfig extends Config
 	default RestMode restMode() { return RestMode.REST; }
 
 	@ConfigItem(
-			keyName = "allowOthersRest",
-			name = "Allow Others Rest",
-			description = "Determines whether you can see other players Rest if they have the plugin and use the Spin emote",
+			keyName = "allowPublicResting",
+			name = "Allow Public Resting",
+			description = "Whenever you or another player uses the Spin emote, it will instead make them Rest",
 			position = 2
 	)
-	default boolean allowOthersRest()
+	default boolean allowPublicRest()
 	{
 		return true;
 	}
@@ -44,9 +48,17 @@ public interface RestingConfig extends Config
 
 	@ConfigItem(
 			keyName = "autoRestTimer",
-			name = "Auto-Rest Timer (Sec)",
+			name = "Auto-Rest Timer",
 			description = "Idle time (in seconds) before Auto-Resting if enabled",
 			position = 4
 	)
 	default int autoRestTimer()	{ return 30; }
+
+	@ConfigItem(
+			keyName = "customAnimation",
+			name = "Custom Animation",
+			description = "The AnimationId that the 'Custom' Rest Mode plays",
+			position = 5
+	)
+	default int customAnimation() { return 768; }
 }
