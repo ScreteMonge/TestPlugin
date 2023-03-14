@@ -62,6 +62,12 @@ public class RestingPlugin extends Plugin
 		clientThread.invoke(this::clearAllRests);
 	}
 
+	@Override
+	protected void startUp() throws Exception
+	{
+		clientThread.invoke(this::loadRunWidget);
+	}
+
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
@@ -166,6 +172,15 @@ public class RestingPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		if (event.getMenuEntry().getOption().equals("Rest (private)"))
+		{
+			startRest(client.getLocalPlayer());
+		}
+	}
+
+	@Subscribe
 	public void onHitsplatApplied(HitsplatApplied event)
 	{
 		if (event.getActor() instanceof Player)
@@ -254,7 +269,7 @@ public class RestingPlugin extends Plugin
 		{
 			if (player == client.getLocalPlayer())
 			{
-				sendChatMessage("You're already resting!");
+				stopRest(player);
 			}
 			return;
 		}
@@ -407,7 +422,6 @@ public class RestingPlugin extends Plugin
 		}
 
 		widget.setAction(1, "Rest (private)");
-		widget.setOnOpListener((JavaScriptCallback) this::startRest);
 	}
 
 	public boolean angledToFire(Tile targetTile, WorldPoint worldPoint, int orientation)
