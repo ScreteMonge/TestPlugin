@@ -8,7 +8,6 @@ import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.kit.KitType;
-import net.runelite.api.widgets.JavaScriptCallback;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.callback.ClientThread;
@@ -343,11 +342,6 @@ public class RestingPlugin extends Plugin
 		restMap.put(player, player.getWorldLocation());
 	}
 
-	public void startRest(ScriptEvent e)
-	{
-		startRest(client.getLocalPlayer());
-	}
-
 	public void removeWeapon()
 	{
 		Player player = client.getLocalPlayer();
@@ -360,7 +354,6 @@ public class RestingPlugin extends Plugin
 
 	public void stopRest(Player player)
 	{
-		player.setIdlePoseAnimation(IDLE_POSE);
 		player.setAnimation(AnimationID.IDLE);
 
 		if (player == client.getLocalPlayer())
@@ -368,6 +361,8 @@ public class RestingPlugin extends Plugin
 			returnWeapon();
 			autoRestTimer = 0;
 		}
+
+		returnIdleAnimation(player);
 
 		if (player.getGraphic() == MAGIC_LUNAR_DREAM_Z)
 		{
@@ -411,6 +406,50 @@ public class RestingPlugin extends Plugin
 		}
 
 		player.getPlayerComposition().setHash();
+	}
+
+	public void returnIdleAnimation(Player player)
+	{
+		if (player == client.getLocalPlayer())
+		{
+			ItemContainer equipmentContainer = client.getItemContainer(InventoryID.EQUIPMENT);
+			if (equipmentContainer == null)
+			{
+				player.setIdlePoseAnimation(IDLE_POSE);
+				return;
+			}
+
+			Item weapon = equipmentContainer.getItem(EquipmentInventorySlot.WEAPON.getSlotIdx());
+			if (weapon != null)
+			{
+				for (IdlePoses idlePoses : IdlePoses.values())
+				{
+					if (idlePoses.getWeaponType() == weapon.getId())
+					{
+						player.setIdlePoseAnimation(idlePoses.getAnimationId());
+						return;
+					}
+				}
+
+				player.setIdlePoseAnimation(IDLE_POSE);
+			}
+			return;
+		}
+
+		PlayerComposition comp = player.getPlayerComposition();
+		int[] kits = comp.getEquipmentIds();
+		int weaponId = kits[KitType.WEAPON.getIndex()] - 512;
+
+		for (IdlePoses idlePoses : IdlePoses.values())
+		{
+			if (idlePoses.getWeaponType() == weaponId)
+			{
+				player.setIdlePoseAnimation(idlePoses.getAnimationId());
+				return;
+			}
+		}
+
+		player.setIdlePoseAnimation(IDLE_POSE);
 	}
 
 	public void loadRunWidget()
