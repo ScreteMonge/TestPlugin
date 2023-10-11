@@ -137,36 +137,9 @@ public class RestingPlugin extends Plugin
 			}
 			else if (!restMap.containsKey(player) && animationID == EMOTE_SPIN)
 			{
-				if (config.allowPublicRest())
-				{
+				if (player == client.getLocalPlayer() && config.allowSpinRest() || (player != client.getLocalPlayer() && config.allowPublicRest()))
 					startRest(player);
-				}
 			}
-		}
-	}
-
-	// Create rest option for fires
-	@Subscribe
-	public void onMenuEntryAdded(MenuEntryAdded event)
-	{
-		final Player player = client.getLocalPlayer();
-		final WorldPoint worldPoint = player.getWorldLocation();
-		final Tile targetTile = client.getSelectedSceneTile();
-
-		if (event.getIdentifier() == ObjectID.FIRE_26185)
-		{
-			client.createMenuEntry(-1).setOption("Rest (private)").setTarget(event.getTarget()).setType(MenuAction.RUNELITE).onClick(e ->
-			{
-				if (angledToFire(targetTile, worldPoint, player.getOrientation()))
-				{
-					startRest(player);
-					sendChatMessage("You settle comfortably beside the fire.");
-				}
-				else
-				{
-					sendChatMessage("You must be adjacent to and facing a fire to rest in this way.");
-				}
-			});
 		}
 	}
 
@@ -193,25 +166,6 @@ public class RestingPlugin extends Plugin
 		}
 	}
 
-	// Loop sleep Z animations if config set to Sleep
-	@Subscribe
-	public void onGraphicChanged(GraphicChanged event)
-	{
-		if (event.getActor() instanceof Player)
-		{
-			Player player = (Player) event.getActor();
-
-			if (player == client.getLocalPlayer())
-			{
-				if (restMap.containsKey(player) && config.restMode().equals(RestingConfig.RestMode.SLEEP))
-				{
-					player.setGraphic(MAGIC_LUNAR_DREAM_Z);
-					player.setSpotAnimFrame(0);
-				}
-			}
-		}
-	}
-
 	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
@@ -220,6 +174,9 @@ public class RestingPlugin extends Plugin
 		{
 			loadRunWidget();
 		}
+
+		if (!restMap.containsKey(client.getLocalPlayer()))
+			return;
 
 		if (eventId == WidgetInfo.BANK_CONTAINER.getGroupId()
 				|| eventId == WidgetInfo.DIALOG_OPTION_OPTIONS.getGroupId()
@@ -264,8 +221,11 @@ public class RestingPlugin extends Plugin
 
 	public void startRest(Player player)
 	{
+		System.out.println("StartRest");
+
 		if (restMap.containsKey(player))
 		{
+			System.out.println("Contains player");
 			if (player == client.getLocalPlayer())
 			{
 				stopRest(player);
@@ -273,6 +233,7 @@ public class RestingPlugin extends Plugin
 			return;
 		}
 
+		System.out.println("Doesn't contain player");
 		if (player == client.getLocalPlayer())
 		{
 			removeWeapon();
@@ -288,8 +249,7 @@ public class RestingPlugin extends Plugin
 				case SLEEP:
 					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
 					player.setAnimationFrame(0);
-					player.setGraphic(MAGIC_LUNAR_DREAM_Z);
-					player.setSpotAnimFrame(0);
+					player.createSpotAnim(0, MAGIC_LUNAR_DREAM_Z, 0, 0);
 					player.setIdlePoseAnimation(REST_POSE);
 					break;
 				case SIT:
@@ -324,8 +284,7 @@ public class RestingPlugin extends Plugin
 				case 1:
 					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
 					player.setAnimationFrame(0);
-					player.setGraphic(MAGIC_LUNAR_DREAM_Z);
-					player.setSpotAnimFrame(0);
+					player.createSpotAnim(0, MAGIC_LUNAR_DREAM_Z, 0, 0);
 					player.setIdlePoseAnimation(REST_POSE);
 					break;
 				case 2:
@@ -354,6 +313,8 @@ public class RestingPlugin extends Plugin
 
 	public void stopRest(Player player)
 	{
+		System.out.println("Stop rest");
+
 		player.setAnimation(AnimationID.IDLE);
 
 		if (player == client.getLocalPlayer())
@@ -363,12 +324,7 @@ public class RestingPlugin extends Plugin
 		}
 
 		returnIdleAnimation(player);
-
-		if (player.getGraphic() == MAGIC_LUNAR_DREAM_Z)
-		{
-			player.setGraphic(-1);
-		}
-
+		player.removeSpotAnim(0);
 		restMap.remove(player);
 	}
 
@@ -420,6 +376,9 @@ public class RestingPlugin extends Plugin
 			}
 
 			Item weapon = equipmentContainer.getItem(EquipmentInventorySlot.WEAPON.getSlotIdx());
+			if (weapon == null)
+				player.setIdlePoseAnimation(IDLE_POSE);
+
 			if (weapon != null)
 			{
 				for (IdlePoses idlePoses : IdlePoses.values())
@@ -461,24 +420,6 @@ public class RestingPlugin extends Plugin
 		}
 
 		widget.setAction(1, "Rest (private)");
-	}
-
-	public boolean angledToFire(Tile targetTile, WorldPoint worldPoint, int orientation)
-	{
-		return ((orientation <= 256 && orientation >= 0) || (orientation <= 2047 && orientation >= 1792)) && targetTile.getWorldLocation().dy(1).distanceTo(worldPoint) == 0
-				|| ((orientation >= 256 && orientation <= 768) && targetTile.getWorldLocation().dx(1).distanceTo(worldPoint) == 0)
-				|| ((orientation >= 768 && orientation <= 1280) && targetTile.getWorldLocation().dy(-1).distanceTo(worldPoint) == 0)
-				|| ((orientation >= 1280 && orientation <= 1792) && targetTile.getWorldLocation().dx(-1).distanceTo(worldPoint) == 0)
-				|| ((orientation >= 0 && orientation <= 512) && targetTile.getWorldLocation().dx(1).dy(1).distanceTo(worldPoint) == 0)
-				|| ((orientation >= 512 && orientation <= 1024) && targetTile.getWorldLocation().dx(1).dy(-1).distanceTo(worldPoint) == 0)
-				|| ((orientation >= 1024 && orientation <= 1536) && targetTile.getWorldLocation().dx(-1).dy(-1).distanceTo(worldPoint) == 0)
-				|| (((orientation >= 1536 && orientation <= 2047) || (orientation == 0)) && targetTile.getWorldLocation().dx(-1).dy(1).distanceTo(worldPoint) == 0);
-	}
-
-	private void sendChatMessage(String chatMessage)
-	{
-		final String message = new ChatMessageBuilder().append(ChatColorType.HIGHLIGHT).append(chatMessage).build();
-		chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).runeLiteFormattedMessage(message).build());
 	}
 
 	@Provides
