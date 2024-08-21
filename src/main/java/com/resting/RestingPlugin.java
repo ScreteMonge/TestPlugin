@@ -352,13 +352,13 @@ public class RestingPlugin extends Plugin
 		Item weapon = equipmentContainer.getItem(EquipmentInventorySlot.WEAPON.getSlotIdx());
 		if (weapon != null)
 		{
-			kits[KitType.WEAPON.getIndex()] = weapon.getId() + 512;
+			kits[KitType.WEAPON.getIndex()] = weapon.getId() + PlayerComposition.ITEM_OFFSET;
 		}
 
 		Item shield = equipmentContainer.getItem(EquipmentInventorySlot.SHIELD.getSlotIdx());
 		if (shield != null)
 		{
-			kits[KitType.SHIELD.getIndex()] = shield.getId() + 512;
+			kits[KitType.SHIELD.getIndex()] = shield.getId() + PlayerComposition.ITEM_OFFSET;
 		}
 
 		player.getPlayerComposition().setHash();
@@ -397,7 +397,7 @@ public class RestingPlugin extends Plugin
 
 		PlayerComposition comp = player.getPlayerComposition();
 		int[] kits = comp.getEquipmentIds();
-		int weaponId = kits[KitType.WEAPON.getIndex()] - 512;
+		int weaponId = kits[KitType.WEAPON.getIndex()] - PlayerComposition.ITEM_OFFSET;
 
 		for (IdlePoses idlePoses : IdlePoses.values())
 		{
