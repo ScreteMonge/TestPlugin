@@ -10,12 +10,21 @@ public interface RestingConfig extends Config
 	enum RestMode
 	{
 		REST,
+		FORESTRY_REST,
 		SIT,
 		LOUNGE,
+		DEEP_LOUNGE,
 		SLEEP,
 		RELAX,
+		DEEP_SLEEP,
+		DEAD,
 		CROSS_ARMS,
 		FOLD_HANDS,
+		ARMS_ON_HIPS,
+		WEAPON_ON_SHOULDER,
+		GUARD_STANCE,
+		LEAN_BACK,
+		LEAN_SIDE,
 		CUSTOM
 
 	}

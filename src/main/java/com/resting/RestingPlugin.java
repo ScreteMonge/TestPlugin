@@ -8,8 +8,9 @@ import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.kit.KitType;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.*;
 import net.runelite.client.config.ConfigManager;
@@ -42,15 +43,24 @@ public class RestingPlugin extends Plugin
 
 	private final Map<Player, WorldPoint> restMap = new HashMap<>();
 	private final int MAGIC_LUNAR_DREAM_Z = 1056;
+	private final int EMOTE_SPIN = 2107;
 	private final int IDLE_POSE = 808;
-	private final int REST_POSE = 6296;
-	private final int SIT_POSE = 4851;
-	private final int RELAX_POSE = 8409;
-	private final int LOUNGE_POSE = 6284;
 	private final int CROSS_ARMS_POSE = 2256;
 	private final int FOLD_HANDS_POSE = 2578;
+	private final int SIT_POSE = 4851;
+	private final int DEEP_LOUNGE_POSE = 5814;
+	private final int DEAD_POSE = 6280;
+	private final int LOUNGE_POSE = 6284;
+	private final int REST_POSE = 6296;
+	private final int ARMS_ON_HIPS_POSE = 6393;
+	private final int LEAN_BACK_POSE = 6913;
+	private final int LEAN_SIDE_POSE = 6914;
 	private final int MAGIC_LUNAR_DREAM_SITTING_DOWN = 7627;
-	private final int EMOTE_SPIN = 2107;
+	private final int RELAX_POSE = 8409;
+	private final int FORESTRY_REST_POSE = 10084;
+	private final int WEAPON_ON_SHOULDER_POSE = 10169;
+	private final int GUARD_STANCE_POSE = 10598;
+	private final int DEEP_SLEEP_POSE = 11332;
 	private int autoRestTimer = 0;
 	private WorldPoint autoRestWorldPoint;
 	private final Random random = new Random();
@@ -88,12 +98,11 @@ public class RestingPlugin extends Plugin
 			}
 
 			if (restMap.containsKey(player)
-					|| client.getWidget(WidgetInfo.BANK_CONTAINER) != null
-					|| client.getWidget(WidgetInfo.DIALOG_OPTION_OPTIONS) != null
-					|| client.getWidget(WidgetInfo.DIALOG_NPC_HEAD_MODEL) != null
-					|| client.getWidget(WidgetInfo.DIALOG_PLAYER) != null
-					|| client.getWidget(WidgetInfo.DIALOG_OPTION) != null
-					|| client.getWidget(WidgetInfo.BANK_PIN_CONTAINER) != null
+					|| client.getWidget(ComponentID.BANK_CONTAINER) != null
+					|| client.getWidget(ComponentID.DIALOG_OPTION_OPTIONS) != null
+					|| client.getWidget(ComponentID.DIALOG_NPC_HEAD_MODEL) != null
+					|| client.getWidget(ComponentID.DIALOG_PLAYER_TEXT) != null
+					|| client.getWidget(ComponentID.BANK_PIN_CONTAINER) != null
 					|| player.getAnimation() != -1)
 			{
 				autoRestTimer = 0;
@@ -170,7 +179,7 @@ public class RestingPlugin extends Plugin
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
 		int eventId = event.getGroupId();
-		if (eventId == WidgetInfo.MINIMAP_TOGGLE_RUN_ORB.getGroupId())
+		if (eventId == WidgetUtil.componentToInterface(ComponentID.MINIMAP_TOGGLE_RUN_ORB))
 		{
 			loadRunWidget();
 		}
@@ -178,12 +187,11 @@ public class RestingPlugin extends Plugin
 		if (!restMap.containsKey(client.getLocalPlayer()))
 			return;
 
-		if (eventId == WidgetInfo.BANK_CONTAINER.getGroupId()
-				|| eventId == WidgetInfo.DIALOG_OPTION_OPTIONS.getGroupId()
-				|| eventId == WidgetInfo.DIALOG_NPC_HEAD_MODEL.getGroupId()
-				|| eventId == WidgetInfo.DIALOG_PLAYER.getGroupId()
-				|| eventId == WidgetInfo.DIALOG_OPTION.getGroupId()
-				|| eventId == WidgetInfo.BANK_PIN_CONTAINER.getGroupId())
+		if (eventId == WidgetUtil.componentToInterface(ComponentID.BANK_CONTAINER)
+				|| eventId == WidgetUtil.componentToInterface(ComponentID.DIALOG_OPTION_OPTIONS)
+				|| eventId == WidgetUtil.componentToInterface(ComponentID.DIALOG_NPC_HEAD_MODEL)
+				|| eventId == WidgetUtil.componentToInterface(ComponentID.DIALOG_PLAYER_TEXT)
+				|| eventId == WidgetUtil.componentToInterface(ComponentID.BANK_PIN_CONTAINER))
 		{
 			autoRestTimer = 0;
 			stopRest(client.getLocalPlayer());
@@ -246,11 +254,8 @@ public class RestingPlugin extends Plugin
 					player.setAnimationFrame(0);
 					player.setIdlePoseAnimation(REST_POSE);
 					break;
-				case SLEEP:
-					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
-					player.setAnimationFrame(0);
-					player.createSpotAnim(0, MAGIC_LUNAR_DREAM_Z, 0, 0);
-					player.setIdlePoseAnimation(REST_POSE);
+				case FORESTRY_REST:
+					player.setIdlePoseAnimation(FORESTRY_REST_POSE);
 					break;
 				case SIT:
 					player.setIdlePoseAnimation(SIT_POSE);
@@ -258,14 +263,44 @@ public class RestingPlugin extends Plugin
 				case LOUNGE:
 					player.setIdlePoseAnimation(LOUNGE_POSE);
 					break;
+				case DEEP_LOUNGE:
+					player.setIdlePoseAnimation(DEEP_LOUNGE_POSE);
+					break;
+				case SLEEP:
+					player.setAnimation(MAGIC_LUNAR_DREAM_SITTING_DOWN);
+					player.setAnimationFrame(0);
+					player.createSpotAnim(0, MAGIC_LUNAR_DREAM_Z, 0, 0);
+					player.setIdlePoseAnimation(REST_POSE);
+					break;
 				case RELAX:
 					player.setIdlePoseAnimation(RELAX_POSE);
+					break;
+				case DEEP_SLEEP:
+					player.setIdlePoseAnimation(DEEP_SLEEP_POSE);
+					break;
+				case DEAD:
+					player.setIdlePoseAnimation(DEAD_POSE);
 					break;
 				case CROSS_ARMS:
 					player.setIdlePoseAnimation(CROSS_ARMS_POSE);
 					break;
 				case FOLD_HANDS:
 					player.setIdlePoseAnimation(FOLD_HANDS_POSE);
+					break;
+				case ARMS_ON_HIPS:
+					player.setIdlePoseAnimation(ARMS_ON_HIPS_POSE);
+					break;
+				case WEAPON_ON_SHOULDER:
+					player.setIdlePoseAnimation(WEAPON_ON_SHOULDER_POSE);
+					break;
+				case GUARD_STANCE:
+					player.setIdlePoseAnimation(GUARD_STANCE_POSE);
+					break;
+				case LEAN_BACK:
+					player.setIdlePoseAnimation(LEAN_BACK_POSE);
+					break;
+				case LEAN_SIDE:
+					player.setIdlePoseAnimation(LEAN_SIDE_POSE);
 					break;
 				case CUSTOM:
 					player.setIdlePoseAnimation(config.customAnimation());
@@ -413,7 +448,7 @@ public class RestingPlugin extends Plugin
 
 	public void loadRunWidget()
 	{
-		Widget widget = client.getWidget(WidgetInfo.MINIMAP_TOGGLE_RUN_ORB);
+		Widget widget = client.getWidget(ComponentID.MINIMAP_TOGGLE_RUN_ORB);
 		if (widget == null)
 		{
 			return;
