@@ -9,6 +9,7 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.kit.KitType;
 import net.runelite.api.widgets.ComponentID;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.callback.ClientThread;
@@ -179,7 +180,7 @@ public class RestingPlugin extends Plugin
 	public void onWidgetLoaded(WidgetLoaded event)
 	{
 		int eventId = event.getGroupId();
-		if (eventId == WidgetUtil.componentToInterface(ComponentID.MINIMAP_TOGGLE_RUN_ORB))
+		if (eventId == InterfaceID.MINIMAP)
 		{
 			loadRunWidget();
 		}
@@ -187,11 +188,11 @@ public class RestingPlugin extends Plugin
 		if (!restMap.containsKey(client.getLocalPlayer()))
 			return;
 
-		if (eventId == WidgetUtil.componentToInterface(ComponentID.BANK_CONTAINER)
-				|| eventId == WidgetUtil.componentToInterface(ComponentID.DIALOG_OPTION_OPTIONS)
-				|| eventId == WidgetUtil.componentToInterface(ComponentID.DIALOG_NPC_HEAD_MODEL)
-				|| eventId == WidgetUtil.componentToInterface(ComponentID.DIALOG_PLAYER_TEXT)
-				|| eventId == WidgetUtil.componentToInterface(ComponentID.BANK_PIN_CONTAINER))
+		if (eventId == InterfaceID.BANK
+				|| eventId == InterfaceID.DIALOG_OPTION
+				|| eventId == InterfaceID.DIALOG_NPC
+				|| eventId == InterfaceID.DIALOG_PLAYER
+				|| eventId == InterfaceID.BANK_PIN)
 		{
 			autoRestTimer = 0;
 			stopRest(client.getLocalPlayer());
