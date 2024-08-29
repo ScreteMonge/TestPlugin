@@ -229,11 +229,9 @@ public class RestingPlugin extends Plugin
 
 	public void startRest(Player player)
 	{
-		System.out.println("StartRest");
 
 		if (restMap.containsKey(player))
 		{
-			System.out.println("Contains player");
 			if (player == client.getLocalPlayer())
 			{
 				stopRest(player);
@@ -241,7 +239,6 @@ public class RestingPlugin extends Plugin
 			return;
 		}
 
-		System.out.println("Doesn't contain player");
 		if (player == client.getLocalPlayer())
 		{
 			removeWeapon();
@@ -348,8 +345,6 @@ public class RestingPlugin extends Plugin
 
 	public void stopRest(Player player)
 	{
-		System.out.println("Stop rest");
-
 		player.setAnimation(AnimationID.IDLE);
 
 		if (player == client.getLocalPlayer())
